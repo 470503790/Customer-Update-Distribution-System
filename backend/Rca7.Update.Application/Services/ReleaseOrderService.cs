@@ -7,10 +7,24 @@ using Rca7.Update.Core.Entities;
 
 namespace Rca7.Update.Application.Services;
 
+/// <summary>
+/// 发布单服务，管理发布单的创建、查询和回滚
+/// </summary>
 public class ReleaseOrderService
 {
+    /// <summary>
+    /// 最小版本号限制
+    /// </summary>
     private static readonly Version MinimumVersion = new(1, 0, 0);
+    
+    /// <summary>
+    /// 最大版本号限制
+    /// </summary>
     private static readonly Version MaximumVersion = new(9, 9, 9);
+    
+    /// <summary>
+    /// 默认执行步骤顺序：停服 → 备份 → 部署 → 数据脚本 → 重启 → 上报
+    /// </summary>
     public static readonly IReadOnlyList<AgentStep> DefaultStepOrder = new List<AgentStep>
     {
         AgentStep.ServiceStop,
@@ -34,6 +48,9 @@ public class ReleaseOrderService
         _auditLogs = auditLogs;
     }
 
+    /// <summary>
+    /// 创建发布单并自动加入编排器队列
+    /// </summary>
     public ReleaseOrder Create(ReleaseOrderRequest request)
     {
         var steps = BuildSteps(request);
@@ -60,10 +77,19 @@ public class ReleaseOrderService
         return order;
     }
 
+    /// <summary>
+    /// 获取所有发布单
+    /// </summary>
     public IEnumerable<ReleaseOrder> GetAll() => _orders.GetAll();
 
+    /// <summary>
+    /// 查找指定发布单
+    /// </summary>
     public ReleaseOrder? Find(Guid id) => _orders.Find(id);
 
+    /// <summary>
+    /// 触发发布单回滚
+    /// </summary>
     public ReleaseOrder TriggerRollback(Guid id, string reason, string actor)
     {
         var order = _orders.Find(id) ?? throw new InvalidOperationException("Release order not found");
@@ -76,6 +102,9 @@ public class ReleaseOrderService
         return order;
     }
 
+    /// <summary>
+    /// 构建步骤列表
+    /// </summary>
     private static List<AgentStepProgress> BuildSteps(ReleaseOrderRequest request)
     {
         var normalizedSteps = NormalizeSteps(request.Steps);
@@ -88,6 +117,9 @@ public class ReleaseOrderService
         }).ToList();
     }
 
+    /// <summary>
+    /// 规范化步骤列表，去重并按默认顺序排列
+    /// </summary>
     internal static List<AgentStep> NormalizeSteps(IEnumerable<AgentStep>? requestedSteps)
     {
         var requested = requestedSteps?.ToList() ?? new List<AgentStep>();
