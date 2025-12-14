@@ -25,35 +25,62 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-      - name: Publish backend (placeholder)
-        run: echo "TODO: dotnet publish backend entry"
-      - name: Package backend (placeholder)
-        run: echo "TODO: zip backend release"
+      - name: Restore
+        run: |
+          dotnet restore Rca7.Update.Web.Entry/Rca7.Update.Web.Entry.csproj
+          dotnet restore Rca7.Update.Application/Rca7.Update.Application.csproj
+      - name: Publish backend entry
+        run: dotnet publish Rca7.Update.Web.Entry/Rca7.Update.Web.Entry.csproj -c Release -o ../artifacts/backend
+      - name: Package backend
+        run: |
+          cd ../artifacts
+          zip -r backend_${{ github.ref_name }}.zip backend
       - uses: actions/upload-artifact@v4
         with:
           name: backend-release
-          path: backend/_publish/*.zip
+          path: artifacts/backend_${{ github.ref_name }}.zip
 
   build-frontend:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend/web
     steps:
       - uses: actions/checkout@v4
+      - name: Detect frontend workspace
+        id: frontend_check
+        run: |
+          if [[ -f frontend/package.json ]]; then
+            echo "has_frontend=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_frontend=false" >> "$GITHUB_OUTPUT"
+          fi
       - uses: actions/setup-node@v4
+        if: steps.frontend_check.outputs.has_frontend == 'true'
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - name: Install (placeholder)
-        run: echo "TODO: pnpm install"
-      - name: Build (placeholder)
-        run: echo "TODO: pnpm build"
-      - name: Package frontend (placeholder)
-        run: echo "TODO: zip frontend dist"
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      - name: Build frontend
+        if: steps.frontend_check.outputs.has_frontend == 'true'
+        working-directory: frontend
+        run: |
+          npm ci || npm install
+          npm run build --if-present
+      - name: Package frontend
+        if: steps.frontend_check.outputs.has_frontend == 'true'
+        run: |
+          cd frontend
+          if [ -d dist ]; then
+            zip -r ../artifacts/admin-web_${{ github.ref_name }}.zip dist
+          else
+            echo "dist directory not found; skipping zip" && exit 0
+          fi
       - uses: actions/upload-artifact@v4
+        if: steps.frontend_check.outputs.has_frontend == 'true'
         with:
           name: frontend-release
-          path: frontend/admin-web_*.zip
+          path: artifacts/admin-web_${{ github.ref_name }}.zip
+      - name: Skip frontend packaging
+        if: steps.frontend_check.outputs.has_frontend != 'true'
+        run: echo "frontend/package.json not found; skipping frontend release artifacts."
 
   build-client:
     runs-on: windows-latest
@@ -62,19 +89,22 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-      - name: Publish agent (placeholder)
-        run: echo "TODO: dotnet publish agent"
-      - name: Publish tray (placeholder)
-        run: echo "TODO: dotnet publish tray"
-      - name: Package client (placeholder)
+      - name: Publish agent service
+        run: dotnet publish client/Rca7.UpdateAgent.Service/Rca7.UpdateAgent.Service.csproj -c Release -o client/artifacts/agent
+      - name: Publish tray app
+        run: dotnet publish client/Rca7.UpdateTray.WinForms/Rca7.UpdateTray.WinForms.csproj -c Release -o client/artifacts/tray
+      - name: Package client artifacts
         shell: pwsh
-        run: echo "TODO: Compress-Archive client outputs"
+        run: |
+          $tag = "${{ github.ref_name }}"
+          Compress-Archive -Path client/artifacts/agent/* -DestinationPath client/artifacts/update-agent_$tag.zip
+          Compress-Archive -Path client/artifacts/tray/* -DestinationPath client/artifacts/update-tray_$tag.zip
       - uses: actions/upload-artifact@v4
         with:
           name: client-release
           path: |
-            update-agent_*.zip
-            update-tray_*.zip
+            client/artifacts/update-agent_${{ github.ref_name }}.zip
+            client/artifacts/update-tray_${{ github.ref_name }}.zip
 
   upload-to-cos:
     runs-on: ubuntu-latest
@@ -83,8 +113,13 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           path: ./artifacts
-      - name: Upload to COS (placeholder)
-        run: echo "TODO: upload artifacts to COS using $COS_BUCKET in $COS_REGION"
+      - name: Upload to COS (optional)
+        if: ${{ env.COS_BUCKET != '' }}
+        run: |
+          echo "Artifacts ready in ./artifacts. Integrate coscmd or qcloud CLI to upload to bucket ${COS_BUCKET} in ${COS_REGION}."
+      - name: Skip COS upload
+        if: ${{ env.COS_BUCKET == '' }}
+        run: echo "COS credentials not configured; skipping upload."
 
   github-release:
     runs-on: ubuntu-latest
