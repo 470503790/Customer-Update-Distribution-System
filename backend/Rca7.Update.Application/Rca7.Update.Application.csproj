@@ -4,6 +4,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="SqlSugarCore" Version="5.1.4.126" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="../Rca7.Update.Core/Rca7.Update.Core.csproj" />
   </ItemGroup>
 </Project>
