@@ -1,0 +1,30 @@
+name: Deploy-Prod
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  DEPLOY_SSH_HOST_PROD: ${{ secrets.DEPLOY_SSH_HOST_PROD }}
+  DEPLOY_SSH_USER_PROD: ${{ secrets.DEPLOY_SSH_USER_PROD }}
+  DEPLOY_SSH_KEY_PROD: ${{ secrets.DEPLOY_SSH_KEY_PROD }}
+  DEPLOY_PATH_PROD: ${{ secrets.DEPLOY_PATH_PROD }}
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Login GHCR (placeholder)
+        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Build & Push image (placeholder)
+        run: |
+          echo "TODO: docker build and push prod image"
+      - name: Deploy via SSH (placeholder)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ env.DEPLOY_SSH_HOST_PROD }}
+          username: ${{ env.DEPLOY_SSH_USER_PROD }}
+          key: ${{ env.DEPLOY_SSH_KEY_PROD }}
+          script: |
+            echo "TODO: deploy to ${DEPLOY_PATH_PROD} with docker compose"
