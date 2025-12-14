@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [ main, develop ]
+
+env:
+  DOTNET_VERSION: ${{ vars.DOTNET_VERSION }}
+  NODE_VERSION: ${{ vars.NODE_VERSION }}
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Restore (placeholder)
+        run: echo "TODO: dotnet restore for backend"
+      - name: Build (placeholder)
+        run: echo "TODO: dotnet build -c Release --no-restore"
+      - name: Test (placeholder)
+        run: echo "TODO: dotnet test -c Release --no-build"
+      - name: Upload Coverage (placeholder)
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: backend/**/TestResults/**
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      - name: Enable corepack
+        run: corepack enable
+      - name: Install (placeholder)
+        run: echo "TODO: pnpm install"
+      - name: Lint (placeholder)
+        run: echo "TODO: pnpm lint"
+      - name: Build (placeholder)
+        run: echo "TODO: pnpm build"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: admin-web-dist
+          path: frontend/web/dist
+
+  client:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: client
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Restore (placeholder)
+        run: echo "TODO: dotnet restore for client"
+      - name: Build (placeholder)
+        run: echo "TODO: dotnet build -c Release --no-restore"
+      - name: Test (placeholder)
+        run: echo "TODO: dotnet test -c Release --no-build"
