@@ -11,6 +11,17 @@ public class ReleaseOrderService
 {
     private static readonly Version MinimumVersion = new(1, 0, 0);
     private static readonly Version MaximumVersion = new(9, 9, 9);
+    public static readonly IReadOnlyList<AgentStep> DefaultStepOrder = new List<AgentStep>
+    {
+        AgentStep.ServiceStop,
+        AgentStep.FullBackup,
+        AgentStep.DeployServer,
+        AgentStep.DeployClient,
+        AgentStep.RunSchemaScript,
+        AgentStep.RunDataScript,
+        AgentStep.Restart,
+        AgentStep.ReportStatus
+    };
 
     private readonly IReleaseOrderRepository _orders;
     private readonly ReleaseOrchestrator _orchestrator;
@@ -67,16 +78,37 @@ public class ReleaseOrderService
 
     private static List<AgentStepProgress> BuildSteps(ReleaseOrderRequest request)
     {
-        if (request.Steps == null)
-        {
-            return new List<AgentStepProgress>();
-        }
+        var normalizedSteps = NormalizeSteps(request.Steps);
 
-        return request.Steps.Select(step => new AgentStepProgress
+        return normalizedSteps.Select(step => new AgentStepProgress
         {
             Step = step,
             State = AgentStepState.Pending,
             Message = $"Pending {step}"
         }).ToList();
+    }
+
+    internal static List<AgentStep> NormalizeSteps(IEnumerable<AgentStep>? requestedSteps)
+    {
+        var requested = requestedSteps?.ToList() ?? new List<AgentStep>();
+        var uniqueRequested = new List<AgentStep>();
+        foreach (var step in requested)
+        {
+            if (!uniqueRequested.Contains(step))
+            {
+                uniqueRequested.Add(step);
+            }
+        }
+
+        var ordered = new List<AgentStep>();
+
+        foreach (var required in DefaultStepOrder)
+        {
+            ordered.Add(required);
+            uniqueRequested.Remove(required);
+        }
+
+        ordered.AddRange(uniqueRequested);
+        return ordered;
     }
 }
