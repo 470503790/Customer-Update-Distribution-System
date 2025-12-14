@@ -140,16 +140,29 @@ public class ReleaseOrchestrator : BackgroundService
 
     private static List<AgentStepProgress> BuildDefaultSteps()
     {
-        return new List<AgentStepProgress>
+        return ReleaseOrderService.DefaultStepOrder
+            .Select(step => new AgentStepProgress
+            {
+                Step = step,
+                State = AgentStepState.Pending,
+                Message = DefaultMessageFor(step)
+            })
+            .ToList();
+    }
+
+    private static string DefaultMessageFor(AgentStep step)
+    {
+        return step switch
         {
-            new() { Step = AgentStep.ServiceStop, State = AgentStepState.Pending, Message = "Stopping services" },
-            new() { Step = AgentStep.FullBackup, State = AgentStepState.Pending, Message = "Taking full backup" },
-            new() { Step = AgentStep.DeployServer, State = AgentStepState.Pending, Message = "Deploying server.zip" },
-            new() { Step = AgentStep.DeployClient, State = AgentStepState.Pending, Message = "Deploying client.zip" },
-            new() { Step = AgentStep.RunSchemaScript, State = AgentStepState.Pending, Message = "Running 结构.sql" },
-            new() { Step = AgentStep.RunDataScript, State = AgentStepState.Pending, Message = "Running data.sql" },
-            new() { Step = AgentStep.Restart, State = AgentStepState.Pending, Message = "Restarting services" },
-            new() { Step = AgentStep.ReportStatus, State = AgentStepState.Pending, Message = "Reporting status" },
+            AgentStep.ServiceStop => "Stopping services",
+            AgentStep.FullBackup => "Taking full backup",
+            AgentStep.DeployServer => "Deploying server.zip",
+            AgentStep.DeployClient => "Deploying client.zip",
+            AgentStep.RunSchemaScript => "Running 结构.sql",
+            AgentStep.RunDataScript => "Running data.sql",
+            AgentStep.Restart => "Restarting services",
+            AgentStep.ReportStatus => "Reporting status",
+            _ => $"Pending {step}"
         };
     }
 }
