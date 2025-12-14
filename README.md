@@ -2,6 +2,12 @@
 
 客户现场的 RCA7 更新包（server.zip/client.zip/SQL 脚本）分发与回滚系统，包含基于 Admin.NET 的后端、Vue 管理端以及 Windows Agent/Tray 客户端。
 
+## 当前能力概览
+- 客户-分支-节点树模型：支持版本格式校验、唯一性校验以及节点 Token 一次性生成（见 `backend/Rca7.Update.Application/Services/CustomerTreeService.cs`）。
+- 发布单编排：支持默认的停服 → 备份 → 部署 → 数据脚本 → 重启 → 上报流水，支持回滚触发（`ReleaseOrderService` + `ReleaseOrchestrator`）。
+- 包上传与 COS 预签名：提供对象键生成、按客户/分支/节点分层的路径规则以及签名 URL 生成逻辑（`CosStorageService`）。
+- 审计日志聚合：创建发布单、回滚等操作会写入审计日志存储，便于看板或追踪。
+
 ## 代码结构
 - `backend/`：Admin.NET 后端扩展模块与领域服务，包含发布单编排、包上传、COS 存储适配等。
 - `frontend/`：Admin.NET 前端（Vue3 + Element-Plus）扩展页面的占位目录。
@@ -38,7 +44,7 @@ export SIGN_PFX_PASSWORD="pfx-password"
 ```
 
 ### 本地运行
-- 后端（入口为 `Rca7.Update.Web.Entry`）：
+- 后端（入口为 `Rca7.Update.Web.Entry`，未提供连接串时会退回到本地 SQLite 文件 `customer-update.db`）：
   ```bash
   dotnet restore backend/Rca7.Update.Web.Entry/Rca7.Update.Web.Entry.csproj
   dotnet run --project backend/Rca7.Update.Web.Entry/Rca7.Update.Web.Entry.csproj --urls "http://localhost:5000"
@@ -64,6 +70,22 @@ export SIGN_PFX_PASSWORD="pfx-password"
    - `dotnet test backend/tests/Rca7.Update.Tests.csproj`
 3. 管理端前端与客户端的构建脚本位于 `scripts/`，可根据实际部署方式补充 `build.sh`/`build.ps1`/`test.ps1` 内容。
 
+## API 速览（后端）
+- 客户树：
+  - `GET /api/customers`：查看客户-分支-节点树。
+  - `POST /api/customers`：创建客户（唯一版本校验）。
+  - `POST /api/branches`：为客户新增分支。
+  - `POST /api/nodes`：为分支新增节点。
+  - `POST /api/nodes/{id}/token`：生成一次性节点 Token。
+- 包上传：
+  - `POST /api/packages/uploads`：根据客户/分支/节点与包类型生成 COS 预签名上传/下载 URL。
+- 发布单：
+  - `POST /api/releaseorders`：创建发布单并自动排入编排器。
+  - `GET /api/releaseorders` / `GET /api/releaseorders/{id}`：查看发布单与步骤进度。
+  - `POST /api/releaseorders/{id}/rollback`：触发回滚并记录审计。
+
+> 提示：`backend/Rca7.Update.Web.Entry/appsettings.json` 提供了默认的 COS 配置结构，若要使用外部数据库，可设置 `ConnectionStrings__Default` 或 `DATABASE_CONNECTION` 环境变量。
+
 ## 脚本使用说明
 ### `scripts/build.sh`
 - 参数：`--configuration`、`--backend-project`、`--backend-entry`、`--client-solution`、`--frontend-dir`、`--skip-backend`、`--skip-frontend`、`--skip-client`。
@@ -87,6 +109,18 @@ export SIGN_PFX_PASSWORD="pfx-password"
 
 ### `scripts/package-client.ps1`
 - 作用：预留的客户端打包脚本，尚未实现；可在添加签名、打包逻辑后，通过 `pwsh -File scripts/package-client.ps1 -OutputPath <artifacts>` 在本地或 CI 中调用。
+
+## CI/CD 流程
+- **CI（.github/workflows/ci.yml）**：
+  - 后端：Restore → Build → Test，全量输出 TRX 结果作为构件。
+  - 前端：自动检测 `frontend/package.json`，存在则 npm 安装、lint、build；不存在则跳过但保持 Job 成功。
+  - 客户端：构建 Windows 解决方案，预留测试目录探测。
+- **Release（.github/workflows/release.yml）**：
+  - 后端：`dotnet publish` 生成发布目录并压缩为 `backend_<tag>.zip`。
+  - 前端：存在 `frontend` 时打包 `dist` 目录为 `admin-web_<tag>.zip`。
+  - 客户端：分别发布 Agent Service 与 Tray，再各自打包 zip。
+  - COS 上传：若配置 `COS_BUCKET` 等 Secrets，则在 `upload-to-cos` Job 中替换为实际上传逻辑；默认会跳过。
+  - GitHub Release：汇总所有 zip 构件发布到 tag 对应的 Release。
 
 ## CI/CD 配置清单
 下述 GitHub Actions workflows 依赖的仓库级 Secrets/Variables，需要在运行前配置：

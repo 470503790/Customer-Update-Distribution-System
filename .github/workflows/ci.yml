@@ -20,41 +20,73 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-      - name: Restore (placeholder)
-        run: echo "TODO: dotnet restore for backend"
-      - name: Build (placeholder)
-        run: echo "TODO: dotnet build -c Release --no-restore"
-      - name: Test (placeholder)
-        run: echo "TODO: dotnet test -c Release --no-build"
-      - name: Upload Coverage (placeholder)
+      - name: Cache NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+      - name: Restore
+        run: |
+          dotnet restore Rca7.Update.Application/Rca7.Update.Application.csproj
+          dotnet restore Rca7.Update.Web.Entry/Rca7.Update.Web.Entry.csproj
+          dotnet restore tests/Rca7.Update.Tests.csproj
+      - name: Build
+        run: |
+          dotnet build Rca7.Update.Web.Entry/Rca7.Update.Web.Entry.csproj -c Release --no-restore
+          dotnet build tests/Rca7.Update.Tests.csproj -c Release --no-restore
+      - name: Test
+        run: |
+          mkdir -p TestResults
+          dotnet test tests/Rca7.Update.Tests.csproj -c Release --no-build --logger "trx;LogFileName=tests.trx" --results-directory TestResults
+      - name: Upload Test Results
         uses: actions/upload-artifact@v4
         with:
-          name: backend-coverage
-          path: backend/**/TestResults/**
+          name: backend-test-results
+          path: backend/TestResults/**
 
   frontend:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend/web
     steps:
       - uses: actions/checkout@v4
+      - name: Detect frontend workspace
+        id: frontend_check
+        run: |
+          if [[ -f frontend/package.json ]]; then
+            echo "has_frontend=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_frontend=false" >> "$GITHUB_OUTPUT"
+          fi
       - uses: actions/setup-node@v4
+        if: steps.frontend_check.outputs.has_frontend == 'true'
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-      - name: Enable corepack
-        run: corepack enable
-      - name: Install (placeholder)
-        run: echo "TODO: pnpm install"
-      - name: Lint (placeholder)
-        run: echo "TODO: pnpm lint"
-      - name: Build (placeholder)
-        run: echo "TODO: pnpm build"
-      - uses: actions/upload-artifact@v4
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install dependencies
+        if: steps.frontend_check.outputs.has_frontend == 'true'
+        working-directory: frontend
+        run: |
+          npm ci || npm install
+      - name: Lint
+        if: steps.frontend_check.outputs.has_frontend == 'true'
+        working-directory: frontend
+        run: |
+          if npm run | grep -q "lint"; then npm run lint; else echo "No lint script"; fi
+      - name: Build
+        if: steps.frontend_check.outputs.has_frontend == 'true'
+        working-directory: frontend
+        run: npm run build --if-present
+      - name: Upload dist
+        if: steps.frontend_check.outputs.has_frontend == 'true'
+        uses: actions/upload-artifact@v4
         with:
           name: admin-web-dist
-          path: frontend/web/dist
+          path: frontend/dist
+      - name: Skip frontend (placeholder)
+        if: steps.frontend_check.outputs.has_frontend != 'true'
+        run: echo "frontend/package.json not found, skipping frontend job."
 
   client:
     runs-on: windows-latest
@@ -66,9 +98,10 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-      - name: Restore (placeholder)
-        run: echo "TODO: dotnet restore for client"
-      - name: Build (placeholder)
-        run: echo "TODO: dotnet build -c Release --no-restore"
-      - name: Test (placeholder)
-        run: echo "TODO: dotnet test -c Release --no-build"
+      - name: Restore
+        run: dotnet restore Rca7.UpdateClient.sln
+      - name: Build
+        run: dotnet build Rca7.UpdateClient.sln -c Release --no-restore
+      - name: Test (noop)
+        run: |
+          if (Test-Path tests) { dotnet test .\tests -c Release --no-build } else { echo "No client tests present" }
