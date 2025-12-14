@@ -1,9 +1,13 @@
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 using Rca7.UpdateClient.Shared.Config;
 
 namespace Rca7.UpdateTray.WinForms.Views;
 
+/// <summary>
+/// 托盘主窗体，提供更新向导和配置界面
+/// </summary>
 public class MainForm : Form
 {
     private readonly TabControl _tabs;
@@ -14,6 +18,9 @@ public class MainForm : Form
     private readonly Label _backupDirectoryLabel;
     private readonly ListBox _sqlOrderList;
 
+    /// <summary>
+    /// 初始化主窗体，创建选项卡和控件
+    /// </summary>
     public MainForm()
     {
         Text = "Update Tray";
@@ -68,6 +75,9 @@ public class MainForm : Form
         LoadDefaultConfiguration();
     }
 
+    /// <summary>
+    /// 加载默认配置并显示在界面上
+    /// </summary>
     private void LoadDefaultConfiguration()
     {
         var defaults = UpdateConfiguration.CreateDefaults(AppContext.BaseDirectory);
