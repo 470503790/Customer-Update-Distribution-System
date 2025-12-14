@@ -9,11 +9,17 @@ using Xunit;
 
 namespace Rca7.Update.Tests;
 
+/// <summary>
+/// 发布单服务测试类，测试发布单步骤的规范化逻辑
+/// </summary>
 public class ReleaseOrderServiceTests
 {
     private readonly ReleaseOrderService _service;
     private readonly Guid _customerId = Guid.NewGuid();
 
+    /// <summary>
+    /// 测试初始化，创建发布单服务及其依赖
+    /// </summary>
     public ReleaseOrderServiceTests()
     {
         var orderRepo = new InMemoryReleaseOrderRepository();
@@ -23,6 +29,9 @@ public class ReleaseOrderServiceTests
         _service = new ReleaseOrderService(orderRepo, orchestrator, auditService);
     }
 
+    /// <summary>
+    /// 测试当请求只包含部分步骤时，自动注入默认步骤
+    /// </summary>
     [Fact]
     public void Should_InjectDefaultSteps_WhenRequestIsPartial()
     {
@@ -41,6 +50,9 @@ public class ReleaseOrderServiceTests
         Assert.Equal(ReleaseOrderService.DefaultStepOrder, order.Steps.Select(s => s.Step));
     }
 
+    /// <summary>
+    /// 测试自定义步骤会被追加到默认步骤之后
+    /// </summary>
     [Fact]
     public void Should_AppendCustomStepsAfterDefaults()
     {

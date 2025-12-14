@@ -7,6 +7,9 @@ using Rca7.Update.Core.Entities;
 
 namespace Rca7.Update.Web.Entry.Controllers;
 
+/// <summary>
+/// 包管理控制器，提供包上传准备和查询接口
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class PackagesController : ControllerBase
@@ -18,6 +21,9 @@ public class PackagesController : ControllerBase
         _packages = packages;
     }
 
+    /// <summary>
+    /// 准备包上传，生成预签名 URL
+    /// </summary>
     [HttpPost("upload-urls")]
     public ActionResult<PackageUploadResponse> PrepareUpload([FromBody] PackageUploadRequest request)
     {
@@ -25,6 +31,9 @@ public class PackagesController : ControllerBase
         return Ok(response);
     }
 
+    /// <summary>
+    /// 列出指定客户的所有包
+    /// </summary>
     [HttpGet("customers/{customerId:guid}")]
     public ActionResult<IEnumerable<PackageUpload>> List(Guid customerId)
     {

@@ -7,12 +7,18 @@ using Xunit;
 
 namespace Rca7.Update.Tests;
 
+/// <summary>
+/// 客户树服务测试类，测试客户-分支-节点的验证规则
+/// </summary>
 public class CustomerTreeServiceTests
 {
     private readonly CustomerTreeService _service;
     private readonly Guid _customerId;
     private readonly Guid _branchId;
 
+    /// <summary>
+    /// 测试初始化，创建测试用的客户和分支
+    /// </summary>
     public CustomerTreeServiceTests()
     {
         _service = new CustomerTreeService(new InMemoryCustomerTreeRepository());
@@ -22,6 +28,9 @@ public class CustomerTreeServiceTests
         _branchId = branch.Id;
     }
 
+    /// <summary>
+    /// 测试客户版本号唯一性约束
+    /// </summary>
     [Fact]
     public void Should_EnforceCustomerVersionUniqueness()
     {
@@ -29,6 +38,9 @@ public class CustomerTreeServiceTests
         Assert.Throws<InvalidOperationException>(() => _service.CreateCustomer(input));
     }
 
+    /// <summary>
+    /// 测试分支版本号低于最小值时被拒绝
+    /// </summary>
     [Fact]
     public void Should_RejectBranchVersionBelowMinimum()
     {
@@ -36,6 +48,9 @@ public class CustomerTreeServiceTests
         Assert.Throws<ArgumentOutOfRangeException>(() => _service.AddBranch(input));
     }
 
+    /// <summary>
+    /// 测试节点环境枚举值的有效性验证
+    /// </summary>
     [Fact]
     public void Should_ValidateEnvironmentEnum()
     {
@@ -43,6 +58,9 @@ public class CustomerTreeServiceTests
         Assert.Throws<ArgumentOutOfRangeException>(() => _service.AddNode(input));
     }
 
+    /// <summary>
+    /// 测试节点令牌只能生成一次
+    /// </summary>
     [Fact]
     public void Should_Generate_NodeToken_OnlyOnce()
     {

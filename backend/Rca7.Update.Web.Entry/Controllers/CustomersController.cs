@@ -6,6 +6,9 @@ using Rca7.Update.Core.Entities;
 
 namespace Rca7.Update.Web.Entry.Controllers;
 
+/// <summary>
+/// 客户管理控制器，提供客户树的查询和创建接口
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class CustomersController : ControllerBase
@@ -17,12 +20,18 @@ public class CustomersController : ControllerBase
         _service = service;
     }
 
+    /// <summary>
+    /// 获取完整客户树
+    /// </summary>
     [HttpGet]
     public ActionResult<IEnumerable<Customer>> GetTree()
     {
         return Ok(_service.GetTree());
     }
 
+    /// <summary>
+    /// 创建新客户
+    /// </summary>
     [HttpPost]
     public ActionResult<Customer> Create([FromBody] CustomerInput input)
     {
