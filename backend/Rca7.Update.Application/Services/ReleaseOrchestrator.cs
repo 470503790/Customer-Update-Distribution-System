@@ -106,7 +106,7 @@ public class ReleaseOrchestrator : BackgroundService
 
             try
             {
-                // 原型中模拟步骤标记为运行后立即成功
+                // 原型中模拟步骤标记为运行后立即成功 In this prototype we simulate success immediately after the step is marked running.
                 if (RequiresPackage(step.Step) && !ValidatePackages(order))
                 {
                     throw new InvalidOperationException("Required packages for deployment are missing.");

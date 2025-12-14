@@ -33,7 +33,7 @@ public class NamedPipeServerHost
     public Task StartAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Named pipe host listening on {PipeName}. IPC skeleton ready for future implementation.", PipeName);
-        // 实现将创建 NamedPipeServerStream 并循环处理传入请求
+        // 实现将创建 NamedPipeServerStream 并循环处理传入请求 The implementation will create a NamedPipeServerStream and loop on incoming requests.
         return Task.CompletedTask;
     }
 

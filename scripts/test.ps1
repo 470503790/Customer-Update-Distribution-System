@@ -20,7 +20,7 @@ dotnet test 的构建配置（默认：Release） Build configuration for dotnet
 .PARAMETER SkipFrontend
 跳过前端测试执行 Skip frontend test execution.
 .PARAMETER SkipClient
-Skip client test execution.
+跳过客户端测试执行 Skip client test execution.
 #>
 [CmdletBinding()]
 param(

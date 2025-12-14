@@ -6,6 +6,7 @@ namespace Rca7.Update.Core.Entities;
 
 /// <summary>
 /// 节点配置索引实体，只读索引表，记录绑定到节点的配置版本
+/// Read-only index table for configuration versions bound to nodes.
 /// </summary>
 [SugarTable("node_config_index")]
 public class NodeConfigIndex
