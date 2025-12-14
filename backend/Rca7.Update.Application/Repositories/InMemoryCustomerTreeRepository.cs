@@ -5,8 +5,14 @@ using Rca7.Update.Core.Entities;
 
 namespace Rca7.Update.Application.Repositories;
 
+/// <summary>
+/// 内存客户树仓储实现，用于测试和原型开发
+/// </summary>
 public class InMemoryCustomerTreeRepository : ICustomerTreeRepository
 {
+    /// <summary>
+    /// 客户列表
+    /// </summary>
     private readonly List<Customer> _customers = new();
 
     public IEnumerable<Customer> GetCustomers() => _customers;
@@ -30,6 +36,9 @@ public class InMemoryCustomerTreeRepository : ICustomerTreeRepository
         .SelectMany(b => b.Nodes)
         .Any(n => string.Equals(n.Version, version, StringComparison.OrdinalIgnoreCase));
 
+    /// <summary>
+    /// 保存客户，如不存在则添加，存在则更新
+    /// </summary>
     public void SaveCustomer(Customer customer)
     {
         var existing = FindCustomer(customer.Id);
@@ -45,6 +54,9 @@ public class InMemoryCustomerTreeRepository : ICustomerTreeRepository
         }
     }
 
+    /// <summary>
+    /// 保存分支，如不存在则添加，存在则更新
+    /// </summary>
     public void SaveBranch(Branch branch)
     {
         var customer = FindCustomer(branch.CustomerId) ?? throw new InvalidOperationException("Customer not found for branch");
@@ -61,6 +73,9 @@ public class InMemoryCustomerTreeRepository : ICustomerTreeRepository
         }
     }
 
+    /// <summary>
+    /// 保存节点，如不存在则添加，存在则更新
+    /// </summary>
     public void SaveNode(Node node)
     {
         var branch = FindBranch(node.BranchId) ?? throw new InvalidOperationException("Branch not found for node");
