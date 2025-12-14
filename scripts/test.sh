@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
+# 描述：后端、前端和客户端项目的测试执行脚本
 # Description: Test execution for backend, frontend, and client projects.
-# Usage: test.sh [options]
-#   -c|--configuration <Configuration>   Build configuration for dotnet test (Default: Release)
-#   --test-filter <Filter>               Optional filter to run specific backend tests
-#   --backend-test-project <Path>        Path to backend test project file
-#   --frontend-dir <Path>                Path to frontend project directory
-#   --client-test-solution <Path>        Path to client test solution or project file
-#   --skip-backend                       Skip backend test execution
-#   --skip-frontend                      Skip frontend test execution
-#   --skip-client                        Skip client test execution
-#   -h|--help                            Show help
+# 用法 Usage: test.sh [options]
+#   -c|--configuration <Configuration>   dotnet test 的构建配置（默认：Release） Build configuration for dotnet test (Default: Release)
+#   --test-filter <Filter>               运行特定后端测试的可选过滤器 Optional filter to run specific backend tests
+#   --backend-test-project <Path>        后端测试项目文件路径 Path to backend test project file
+#   --frontend-dir <Path>                前端项目目录路径 Path to frontend project directory
+#   --client-test-solution <Path>        客户端测试解决方案或项目文件路径 Path to client test solution or project file
+#   --skip-backend                       跳过后端测试执行 Skip backend test execution
+#   --skip-frontend                      跳过前端测试执行 Skip frontend test execution
+#   --skip-client                        跳过客户端测试执行 Skip client test execution
+#   -h|--help                            显示帮助 Show help
 
 set -euo pipefail
 

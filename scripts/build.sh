@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
+# 描述：后端、前端和客户端组件的构建自动化脚本
 # Description: Build automation for backend, frontend, and client components.
-# Usage: build.sh [options]
-#   -c|--configuration <Configuration>   Build configuration (Default: Release)
-#   --backend-project <Path>             Path to backend application project file
-#   --backend-entry <Path>               Path to backend entry project file
-#   --client-solution <Path>             Path to client solution or project file
-#   --frontend-dir <Path>                Path to frontend project directory
-#   --skip-backend                       Skip backend restore/build
-#   --skip-frontend                      Skip frontend build
-#   --skip-client                        Skip client build
-#   -h|--help                            Show help
+# 用法 Usage: build.sh [options]
+#   -c|--configuration <Configuration>   构建配置（默认：Release） Build configuration (Default: Release)
+#   --backend-project <Path>             后端应用项目文件路径 Path to backend application project file
+#   --backend-entry <Path>               后端入口项目文件路径 Path to backend entry project file
+#   --client-solution <Path>             客户端解决方案或项目文件路径 Path to client solution or project file
+#   --frontend-dir <Path>                前端项目目录路径 Path to frontend project directory
+#   --skip-backend                       跳过后端还原/构建 Skip backend restore/build
+#   --skip-frontend                      跳过前端构建 Skip frontend build
+#   --skip-client                        跳过客户端构建 Skip client build
+#   -h|--help                            显示帮助 Show help
 
 set -euo pipefail
 
