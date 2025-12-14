@@ -5,7 +5,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="SqlSugarCore" Version="5.1.4.126" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="../Rca7.Update.Application/Rca7.Update.Application.csproj" />
     <ProjectReference Include="../Rca7.Update.Core/Rca7.Update.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\migrations\**\*.sql" Link="migrations\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
