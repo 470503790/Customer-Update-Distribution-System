@@ -1,13 +1,15 @@
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Rca7.UpdateAgent.Service.Ipc;
 using Rca7.UpdateClient.Shared.Config;
-using Rca7.UpdateClient.Shared.State;
 
 namespace Rca7.UpdateAgent.Service.Services;
 
 /// <summary>
+/// 后台进程，将来会编排更新状态机
 /// Background process that will eventually orchestrate the update state machine.
 /// </summary>
 public class AgentWorker : BackgroundService
@@ -29,6 +31,9 @@ public class AgentWorker : BackgroundService
         _pipeHost = pipeHost;
     }
 
+    /// <summary>
+    /// 执行后台任务，加载状态并启动命名管道主机
+    /// </summary>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("Update agent starting with update directory: {Path}", _configuration.CurrentValue.DefaultUpdateDirectory);

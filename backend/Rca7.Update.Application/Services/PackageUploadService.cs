@@ -6,9 +6,19 @@ using Rca7.Update.Core.Entities;
 
 namespace Rca7.Update.Application.Services;
 
+/// <summary>
+/// 包上传服务，处理更新包的上传准备和记录
+/// </summary>
 public class PackageUploadService
 {
+    /// <summary>
+    /// 最小版本号限制
+    /// </summary>
     private static readonly Version MinimumVersion = new(1, 0, 0);
+    
+    /// <summary>
+    /// 最大版本号限制
+    /// </summary>
     private static readonly Version MaximumVersion = new(9, 9, 9);
 
     private readonly IPackageRepository _packages;
@@ -22,6 +32,9 @@ public class PackageUploadService
         _auditLogs = auditLogs;
     }
 
+    /// <summary>
+    /// 准备包上传，生成对象键和预签名 URL
+    /// </summary>
     public PackageUploadResponse PrepareUpload(PackageUploadRequest request)
     {
         var config = _storageService.ResolveConfiguration(request.CustomerId);
@@ -47,6 +60,9 @@ public class PackageUploadService
         return _storageService.GenerateUploadUrls(package, config);
     }
 
+    /// <summary>
+    /// 列出指定客户的所有包
+    /// </summary>
     public IEnumerable<PackageUpload> List(Guid customerId)
     {
         return _packages.ListByCustomer(customerId);

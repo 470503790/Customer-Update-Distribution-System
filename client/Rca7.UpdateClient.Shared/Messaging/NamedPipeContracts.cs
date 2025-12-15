@@ -1,9 +1,11 @@
+using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Rca7.UpdateClient.Shared.Messaging;
 
 /// <summary>
+/// 可通过代理命名管道发送的命令
 /// Commands that can be sent over the agent named pipe.
 /// </summary>
 public enum PipeCommand
@@ -20,6 +22,7 @@ public enum PipeCommand
 }
 
 /// <summary>
+/// 命名管道响应的结果
 /// Outcome of a named pipe response.
 /// </summary>
 public enum PipeResponseStatus
@@ -33,16 +36,19 @@ public enum PipeResponseStatus
 }
 
 /// <summary>
+/// IPC 通信交换的基本请求信封
 /// Basic request envelope exchanged over IPC.
 /// </summary>
 public record NamedPipeRequest(PipeCommand Command, Guid CorrelationId, string? PayloadJson = null);
 
 /// <summary>
+/// IPC 通信交换的基本响应信封
 /// Basic response envelope exchanged over IPC.
 /// </summary>
 public record NamedPipeResponse(PipeCommand Command, PipeResponseStatus Status, Guid CorrelationId, string? PayloadJson = null, string? ErrorMessage = null);
 
 /// <summary>
+/// 用于在代理和托盘之间一致地序列化消息的辅助工具
 /// Helper utilities for serializing messages consistently between the agent and tray.
 /// </summary>
 public static class NamedPipeSerializer

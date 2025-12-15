@@ -11,8 +11,14 @@ using Rca7.Update.Core.Entities;
 
 namespace Rca7.Update.Application.Services;
 
+/// <summary>
+/// 发布编排器，后台服务，负责执行发布单的各个步骤
+/// </summary>
 public class ReleaseOrchestrator : BackgroundService
 {
+    /// <summary>
+    /// 发布单队列
+    /// </summary>
     private readonly Channel<Guid> _queue = Channel.CreateUnbounded<Guid>();
     private readonly IReleaseOrderRepository _orders;
     private readonly IPackageRepository _packages;
@@ -27,11 +33,17 @@ public class ReleaseOrchestrator : BackgroundService
         _logger = logger;
     }
 
+    /// <summary>
+    /// 将发布单加入执行队列
+    /// </summary>
     public void Enqueue(Guid orderId)
     {
         _queue.Writer.TryWrite(orderId);
     }
 
+    /// <summary>
+    /// 请求回滚指定发布单
+    /// </summary>
     public void RequestRollback(Guid orderId, string reason, string actor)
     {
         var order = _orders.Find(orderId) ?? throw new InvalidOperationException("Release order not found");
@@ -42,6 +54,9 @@ public class ReleaseOrchestrator : BackgroundService
         _auditLogs.Record("release.rollback", reason, actor, orderId.ToString());
     }
 
+    /// <summary>
+    /// 后台执行任务，从队列中读取发布单并处理
+    /// </summary>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await foreach (var orderId in _queue.Reader.ReadAllAsync(stoppingToken))
@@ -68,6 +83,9 @@ public class ReleaseOrchestrator : BackgroundService
         }
     }
 
+    /// <summary>
+    /// 处理单个发布单，执行所有步骤
+    /// </summary>
     private Task Process(ReleaseOrder order, CancellationToken cancellationToken)
     {
         order.Status = ReleaseStatus.InProgress;
@@ -88,7 +106,7 @@ public class ReleaseOrchestrator : BackgroundService
 
             try
             {
-                // In this prototype we simulate success immediately after the step is marked running.
+                // 原型中模拟步骤标记为运行后立即成功 In this prototype we simulate success immediately after the step is marked running.
                 if (RequiresPackage(step.Step) && !ValidatePackages(order))
                 {
                     throw new InvalidOperationException("Required packages for deployment are missing.");
@@ -118,11 +136,17 @@ public class ReleaseOrchestrator : BackgroundService
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// 判断步骤是否需要包文件
+    /// </summary>
     private static bool RequiresPackage(AgentStep step)
     {
         return step is AgentStep.DeployServer or AgentStep.DeployClient;
     }
 
+    /// <summary>
+    /// 验证发布单关联的包是否存在
+    /// </summary>
     private bool ValidatePackages(ReleaseOrder order)
     {
         if (order.ServerPackageId.HasValue && _packages.Find(order.ServerPackageId.Value) == null)
@@ -138,6 +162,9 @@ public class ReleaseOrchestrator : BackgroundService
         return true;
     }
 
+    /// <summary>
+    /// 构建默认执行步骤列表
+    /// </summary>
     private static List<AgentStepProgress> BuildDefaultSteps()
     {
         return ReleaseOrderService.DefaultStepOrder
@@ -150,6 +177,9 @@ public class ReleaseOrchestrator : BackgroundService
             .ToList();
     }
 
+    /// <summary>
+    /// 获取步骤的默认消息
+    /// </summary>
     private static string DefaultMessageFor(AgentStep step)
     {
         return step switch

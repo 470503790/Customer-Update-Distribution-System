@@ -1,10 +1,14 @@
+using System.IO;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Rca7.UpdateClient.Shared.State;
 
 namespace Rca7.UpdateAgent.Service.Services;
 
 /// <summary>
+/// 持久化检查点以用于崩溃恢复和手动检查
 /// Persists checkpoints for crash recovery and manual inspection.
 /// </summary>
 public class AgentStateStore
@@ -18,8 +22,14 @@ public class AgentStateStore
         _stateFilePath = Path.Combine(AppContext.BaseDirectory, AgentState.DefaultStateFileName);
     }
 
+    /// <summary>
+    /// 当前代理状态
+    /// </summary>
     public AgentState Current { get; private set; } = new();
 
+    /// <summary>
+    /// 从文件加载代理状态
+    /// </summary>
     public async Task<AgentState> LoadAsync(CancellationToken cancellationToken)
     {
         if (!File.Exists(_stateFilePath))
@@ -36,6 +46,9 @@ public class AgentStateStore
         return Current;
     }
 
+    /// <summary>
+    /// 保存代理状态到文件
+    /// </summary>
     public async Task SaveAsync(CancellationToken cancellationToken)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(_stateFilePath) ?? ".");

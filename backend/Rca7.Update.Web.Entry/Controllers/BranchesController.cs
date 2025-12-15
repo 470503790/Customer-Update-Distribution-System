@@ -6,6 +6,9 @@ using Rca7.Update.Core.Entities;
 
 namespace Rca7.Update.Web.Entry.Controllers;
 
+/// <summary>
+/// 分支管理控制器，提供为客户添加分支的接口
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class BranchesController : ControllerBase
@@ -17,6 +20,9 @@ public class BranchesController : ControllerBase
         _service = service;
     }
 
+    /// <summary>
+    /// 为客户创建新分支
+    /// </summary>
     [HttpPost]
     public ActionResult<Branch> Create([FromBody] BranchInput input)
     {

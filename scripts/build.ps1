@@ -1,24 +1,26 @@
 <#+
 .SYNOPSIS
+构建自动化脚本，用于后端、前端和客户端组件
 Build automation for backend, frontend, and client components.
 .DESCRIPTION
+还原并构建后端（应用和入口）、可选的前端 npm 项目和客户端解决方案
 Restores and builds backend (application and entry), optional frontend npm project, and client solution.
 .PARAMETER Configuration
-Build configuration (Default: Release).
+构建配置（默认：Release） Build configuration (Default: Release).
 .PARAMETER BackendProject
-Path to backend application project file.
+后端应用项目文件路径 Path to backend application project file.
 .PARAMETER BackendEntry
-Path to backend entry project file.
+后端入口项目文件路径 Path to backend entry project file.
 .PARAMETER ClientSolution
-Path to client solution or project file.
+客户端解决方案或项目文件路径 Path to client solution or project file.
 .PARAMETER FrontendDir
-Path to frontend project directory.
+前端项目目录路径 Path to frontend project directory.
 .PARAMETER SkipBackend
-Skip backend restore/build.
+跳过后端还原/构建 Skip backend restore/build.
 .PARAMETER SkipFrontend
-Skip frontend build.
+跳过前端构建 Skip frontend build.
 .PARAMETER SkipClient
-Skip client build.
+跳过客户端构建 Skip client build.
 #>
 [CmdletBinding()]
 param(

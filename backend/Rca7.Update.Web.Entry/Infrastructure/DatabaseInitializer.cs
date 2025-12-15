@@ -5,8 +5,17 @@ using SqlSugar;
 
 namespace Rca7.Update.Web.Entry.Infrastructure;
 
+/// <summary>
+/// 数据库初始化器，负责应用数据库迁移脚本
+/// </summary>
 public static class DatabaseInitializer
 {
+    /// <summary>
+    /// 应用数据库迁移脚本，按文件名顺序执行
+    /// </summary>
+    /// <param name="db">SqlSugar 数据库客户端</param>
+    /// <param name="logger">日志记录器</param>
+    /// <param name="migrationsPath">迁移脚本目录路径</param>
     public static void ApplyMigrations(ISqlSugarClient db, ILogger logger, string migrationsPath)
     {
         if (!Directory.Exists(migrationsPath))

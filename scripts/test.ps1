@@ -1,24 +1,26 @@
 <#+
 .SYNOPSIS
+测试执行脚本，用于后端、前端和客户端项目
 Test execution script for backend, frontend, and client projects.
 .DESCRIPTION
+默认运行后端测试，可在可用时包括前端/客户端测试套件
 Runs backend tests by default and can include frontend/client test suites when available.
 .PARAMETER Configuration
-Build configuration for dotnet test (Default: Release).
+dotnet test 的构建配置（默认：Release） Build configuration for dotnet test (Default: Release).
 .PARAMETER TestFilter
-Optional filter to run specific backend tests.
+运行特定后端测试的可选过滤器 Optional filter to run specific backend tests.
 .PARAMETER BackendTestProject
-Path to backend test project file.
+后端测试项目文件路径 Path to backend test project file.
 .PARAMETER FrontendDir
-Path to frontend project directory.
+前端项目目录路径 Path to frontend project directory.
 .PARAMETER ClientTestSolution
-Path to client test solution or project file.
+客户端测试解决方案或项目文件路径 Path to client test solution or project file.
 .PARAMETER SkipBackend
-Skip backend test execution.
+跳过后端测试执行 Skip backend test execution.
 .PARAMETER SkipFrontend
-Skip frontend test execution.
+跳过前端测试执行 Skip frontend test execution.
 .PARAMETER SkipClient
-Skip client test execution.
+跳过客户端测试执行 Skip client test execution.
 #>
 [CmdletBinding()]
 param(
